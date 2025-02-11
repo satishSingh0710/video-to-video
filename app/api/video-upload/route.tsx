@@ -1,0 +1,95 @@
+import { NextResponse, NextRequest } from 'next/server';
+import { v2 as cloudinary } from 'cloudinary';
+import dbConnect from '@/lib/dbConnect';
+import Prompt from '@/app/models/prompts.models';
+import { auth } from '@clerk/nextjs/server';
+
+dbConnect(); // Connect to the database
+
+cloudinary.config({
+    cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+    api_key: process.env.CLOUDINARY_API_KEY,
+    api_secret: process.env.CLOUDINARY_API_SECRET,
+});
+
+function checkCloudinaryCredentials(){
+    if (!process.env.CLOUDINARY_CLOUD_NAME || !process.env.CLOUDINARY_API_KEY || !process.env.CLOUDINARY_API_SECRET) {
+        throw new Error("Cloudinary credentials not found");
+    }
+}
+
+export async function uploadUserVideo(request: NextRequest) {
+    if (request.method !== 'POST') {
+        return NextResponse.json({ error: "Method not allowed" }, { status: 405 });
+    }
+    const { userId } = await auth();
+
+    if (!userId) {
+        return NextResponse.json({ error: "Unauthorized: can't upload the video, login first" }, { status: 401 });
+    }
+
+    try {
+        checkCloudinaryCredentials();
+        const formData = await request?.formData();
+        const videoUrl = formData.get('videoUrl') as string
+        const prompt = formData.get('prompt');
+        const uploadedUrl = await cloudinary.uploader.upload(videoUrl, { resource_type: 'video' });
+
+        const newPrompt = await Prompt.create({
+            userId,
+            prompt,
+            uploadedUrl: uploadedUrl.secure_url,
+        });
+
+        if (!newPrompt) {
+            return NextResponse.json({ error: "Failed to upload the video" }, { status: 400 });
+        }
+
+        return NextResponse.json({ message: "Video uploaded successfully", prompt: newPrompt }, { status: 200 });
+    } catch (error: unknown) {
+        if (error instanceof Error) {
+            return NextResponse.json({ error: error.message }, { status: 400 });
+        } else {
+            return NextResponse.json({ error: error }, { status: 400 });
+        }
+    }
+
+}
+
+export async function uploadGeneratedVideo(request: NextRequest) {
+    if (request.method !== 'POST') {
+        return NextResponse.json({ error: "Method not allowed" }, { status: 405 });
+    }
+
+    const { userId } = await auth();
+    if (!userId) {
+        return NextResponse.json({ error: "Unauthorized: can't upload the video, login first" }, { status: 401 });
+    }
+    const body = await request.json();
+    const { promptId, generatedUrl } = body;
+
+    try {
+        checkCloudinaryCredentials();
+        const cloudinaryResponse = await cloudinary.uploader.upload(generatedUrl, { resource_type: 'video' });
+        const promptData = await Prompt.findOne({ _id: promptId, userId });
+
+        if (!promptData) {
+            return NextResponse.json({ error: "Prompt not found" }, { status: 404 });
+        }
+
+        const updatedPrompt = await Prompt.findOneAndUpdate({ _id: promptId, userId }, { generatedUrl: cloudinaryResponse.secure_url }, { new: true });
+
+        if (!updatedPrompt) {
+            return NextResponse.json({ error: "Failed to upload the video" }, { status: 400 });
+        }
+
+        return NextResponse.json({ message: "Video uploaded successfully", prompt: updatedPrompt }, { status: 200 });
+
+    } catch (error: unknown) {
+        if (error instanceof Error) {
+            return NextResponse.json({ error: error.message }, { status: 400 });
+        } else {
+            return NextResponse.json({ error: error }, { status: 400 });
+        }
+    }
+}

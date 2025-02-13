@@ -11,7 +11,7 @@ const promptSchema = new mongoose.Schema({
         required: true, 
         unique: false
     },
-    uploadedUrl: {
+    referenceVideoUrl: {
         type: String, 
         required: true, 
         unique: true, 
@@ -19,7 +19,7 @@ const promptSchema = new mongoose.Schema({
     generatedUrl: {
         type: String, 
         required: false, 
-        unique: true,
+        unique: false,
     }, 
 }, {timestamps: true});
 

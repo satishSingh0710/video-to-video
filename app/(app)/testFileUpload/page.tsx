@@ -1,30 +1,94 @@
 "use client";
 
-import React, { useRef, useState } from "react";
+import React, { useRef, useState, useEffect } from "react";
 import UploadcareUploader from "@/components/UploadcareUploader";
 import axios from "axios";
+
+interface PromptData {
+  prompt: string;
+  referenceVideoUrl: string;
+  _id: string;
+}
 
 const VideoUploadForm: React.FC = () => {
   const [prompt, setPrompt] = useState<string>("");
   const [fileUrl, setFileUrl] = useState<string | null>(null);
   const [isUploading, setIsUploading] = useState<boolean>(false);
-  const [userUploadCloudinaryUrl, setUserUploadCloudinaryUrl] = useState<string>("");
-  const [promptId, setPromptId] = useState<string>("");
+  // const [userUploadCloudinaryUrl, setUserUploadCloudinaryUrl] = useState<string>("");
+  const [promptData, setPromptData] = useState<PromptData>();
   const uploaderRef = useRef<any>(null); // ✅ Ref to call `clearUploads()`
+  // const [isGenerating, setIsGenerating] = useState<boolean>(false);
+  const [generatedVideoUrl, setGeneratedVideoUrl] = useState<string>("");
+  const [requestId, setRequestId] = useState<string>("");
 
   const handleUpload = (url: string) => {
     setFileUrl(url);
   };
 
+
+  const getTransFormedVideoLink = async () => {
+    const response = await axios.post("/api/fal/result", { requestId })
+    console.log("Response from getTransFormedVideoLink", response);
+  }
+
+  useEffect(() => {
+    if (!requestId) return; // ✅ Prevent polling if no requestId
+
+    const interval = setInterval(async () => {
+      try {
+        const response = await axios.post(`/api/fal/status`, { requestId });
+
+        console.log("🔍 Checking status for requestId:", requestId, "=>>>", response.data);
+        console.log("response.data.response.status:", response.data?.response?.status);
+        if(response.data.response.status === "COMPLETED"){
+          getTransFormedVideoLink();
+          clearInterval(interval);
+        }
+
+      } catch (error: any) {
+        console.error("❌ Error checking status for requestId:", requestId, error.response?.data || error.message);
+        clearInterval(interval); // ✅ Stop polling if there's an error
+      }
+    }, 10000); // ✅ Poll every 10 seconds
+
+    return () => clearInterval(interval); // ✅ Clean up on unmount
+  }, [requestId]);
+
+  const generateAiVideo = async () => {
+    try {
+      console.log("Before generation: ", promptData?._id, promptData?.referenceVideoUrl, promptData?.prompt);
+      const response = await axios.post("/api/fal/submit", {
+        promptId: promptData?._id,
+        referenceVideoUrl: promptData?.referenceVideoUrl,
+        userPrompt: promptData?.prompt,
+      });
+
+      if (response.status !== 200) {
+        throw new Error(response.data.error || "AI video generation failed");
+      }
+      setRequestId(response.data.requestId);
+      console.log("AI video generation successful:", response);
+      setGeneratedVideoUrl(response.data.generatedUrl);
+    } catch (error: any) {
+      console.error("AI video generation failed:", error.response?.data || error.message);
+      alert("AI video generation failed!");
+    }
+  }
+
+  useEffect(() => {
+    if (!promptData) return;
+    generateAiVideo();
+  }, [promptData]);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if(!fileUrl){
+    if (!fileUrl) {
       alert("Please upload a video first!");
       return;
     }
 
-    if(!prompt){
+    if (!prompt) {
       alert("Please enter a prompt!");
       return;
     }
@@ -42,12 +106,19 @@ const VideoUploadForm: React.FC = () => {
       }
 
       console.log("Upload successful:", response);
-      setPromptId(response.data.prompt._id);
-      setUserUploadCloudinaryUrl(response.data.prompt.referenceVideoUrl);
+
+      setPromptData({
+        prompt: response.data.prompt.prompt,
+        referenceVideoUrl: response.data.prompt.referenceVideoUrl,
+        _id: response.data.prompt._id,
+      });
+
+      // setUserUploadCloudinaryUrl(response.data.prompt.referenceVideoUrl);
 
       // ✅ Clear Uploadcare Uploader after submission
       if (uploaderRef.current) {
         uploaderRef.current.clearUploads();
+        // uploaderRef.current.clear(); 
       }
 
       alert("Upload successful!");
@@ -79,11 +150,14 @@ const VideoUploadForm: React.FC = () => {
             </div>
 
             {/* ✅ Pass uploader reference to call `clearUploads()` */}
-            <UploadcareUploader onUpload={handleUpload} />
-            {
+            <UploadcareUploader onUpload={handleUpload} ref={uploaderRef}/>
+            {/* {
               userUploadCloudinaryUrl && <>
-              <video src={userUploadCloudinaryUrl} controls></video>
+                <video src={userUploadCloudinaryUrl} controls></video>
               </>
+            } */}
+            {
+              fileUrl && <video src={fileUrl} controls></video>
             }
 
             <button
@@ -102,6 +176,11 @@ const VideoUploadForm: React.FC = () => {
             <video src={userUploadCloudinaryUrl} controls className="w-full mt-2 rounded-lg shadow-md" />
           </div>
         )} */}
+        {
+          generatedVideoUrl && <>
+            <video src={generatedVideoUrl} controls></video>
+          </>
+        }
       </div>
     </div>
   );

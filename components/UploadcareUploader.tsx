@@ -2,6 +2,7 @@
 import { FileUploaderRegular } from '@uploadcare/react-uploader/next';
 import '@uploadcare/react-uploader/core.css';
 import { useRef, useState, useEffect } from 'react';
+import { clear } from 'console';
 
 interface UploadedFile {
     uuid: string;
@@ -32,12 +33,13 @@ function UploadCareModal({ onUpload }: any) {
             const handleChangeEvent = (e: any) => {
                 console.log('change event payload:', e);
                 setFiles([...e.detail.allEntries.filter((f: any) => f.status === 'success')] as any);
+                clearTimeout(timeoutId);
             };
             ctxProvider.addEventListener('change', handleChangeEvent);
-        }, 2000)
+        }, 5000)
         
         return () => {
-            clearTimeout(timeoutId);
+            // clearTimeout(timeoutId);
             if(ctxProvider){
                 ctxProvider.removeEventListener('change', () => {});
             }

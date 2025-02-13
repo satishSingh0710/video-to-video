@@ -21,6 +21,10 @@ const promptSchema = new mongoose.Schema({
         required: false, 
         unique: false,
     }, 
+    requestId: {
+        type: String, 
+        required: false
+    }
 }, {timestamps: true});
 
 const Prompt = mongoose.models.prompts || mongoose.model("prompts", promptSchema);

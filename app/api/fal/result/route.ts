@@ -2,9 +2,11 @@ import { NextRequest, NextResponse } from "next/server";
 import Prompt from "@/app/models/prompts.models";
 import dbConnect from "@/lib/dbConnect";
 import { fal } from "@fal-ai/client";
+import axios from "axios";
 
 dbConnect(); // Ensure DB connection
 
+// post request to fetch the transformed video from the fal.ai queue
 export async function POST(request: NextRequest) {
     try {
         const body = await request.json();
@@ -14,13 +16,16 @@ export async function POST(request: NextRequest) {
             return NextResponse.json({ error: "Missing requestId" }, { status: 400 });
         }
 
-        console.log("🔍 Fetching transformed video for requestId:", requestId);
-
-        const result = await fal.queue.result("fal-ai/hunyuan-video/video-to-video", {
+        const response = await fal.queue.result("fal-ai/hunyuan-video/video-to-video", {
             requestId
           });
+     
+        const prompt = await Prompt.findOne({ requestId });
+        if (!prompt) {
+            return NextResponse.json({ error: "Prompt not found" }, { status: 404 });
+        }
 
-        return NextResponse.json({ result }, { status: 200 });
+       return NextResponse.json({ message: "Video fetched successfully", response}, { status: 200 });
 
     } catch (error) {
         console.error("❌ Error fetching transformed video:", error);

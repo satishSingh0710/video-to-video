@@ -57,10 +57,13 @@ function UploadCareModal({ onUpload }: any) {
         <div>
             <FileUploaderRegular
                 apiRef={ctxProviderRef}
-                sourceList="local, camera, facebook, gdrive"
-                cameraModes="photo, video"
+                sourceList="local, camera,  gdrive"
+                cameraModes="video"
                 classNameUploader="uc-light"
                 pubkey="0a08329423b2ac3d4436"
+                multiple={false}
+                confirmUpload={true}
+                imgOnly={false}
             />
         </div>
     );

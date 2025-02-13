@@ -28,8 +28,10 @@ export async function POST(request: NextRequest) {
     if (!userId) {
         return NextResponse.json({ error: "Unauthorized: can't upload the video, login first" }, { status: 401 });
     }
+    console.log("Welcome to the upload generated video route");
     const body = await request.json();
     const { promptId, generatedUrl } = body;
+    console.log("🔹Generated video received:", { promptId, generatedUrl }); 
 
     try {
         checkCloudinaryCredentials();

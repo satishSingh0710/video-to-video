@@ -4,6 +4,7 @@ import { auth } from "@clerk/nextjs/server";
 import Prompt from "@/app/models/prompts.models";
 import dbConnect from "@/lib/dbConnect";
 
+
 dbConnect(); // Ensure DB connection
 
 export async function POST(request: NextRequest) {
@@ -20,9 +21,9 @@ export async function POST(request: NextRequest) {
       referenceVideoUrl,
       promptId,
     });
-    // ✅ Check for missing fields
+    // Check for missing fields
     if (!userPrompt || !referenceVideoUrl) {
-      console.error("❌ Missing required fields:", {
+      console.error("Missing required fields:", {
         userPrompt,
         referenceVideoUrl,
       });
@@ -37,12 +38,12 @@ export async function POST(request: NextRequest) {
       "fal-ai/hunyuan-video/video-to-video",
       {
         input: { prompt: userPrompt, video_url: referenceVideoUrl },
-        webhookUrl: `https://three-sites-serve.loca.lt/api/fal/webhook`,
+        webhookUrl: `https://efe0-106-219-153-41.ngrok-free.app/api/fal/webhook`,
       }
     );
 
-    console.log("✅ Request submitted successfully:", request_id);
-    
+    console.log("Request submitted successfully:", request_id);
+
     await Prompt.findByIdAndUpdate(promptId, { requestId: request_id });
 
     return NextResponse.json(
@@ -50,7 +51,7 @@ export async function POST(request: NextRequest) {
       { status: 200 }
     );
   } catch (error) {
-    console.error("❌ Error submitting request:", error);
+    console.error("Error submitting request:", error);
     return NextResponse.json(
       { error: "Internal Server Error" },
       { status: 500 }

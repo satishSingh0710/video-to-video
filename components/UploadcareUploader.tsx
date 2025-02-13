@@ -60,7 +60,7 @@ function UploadCareModal({ onUpload }: any) {
                 sourceList="local, camera,  gdrive"
                 cameraModes="video"
                 classNameUploader="uc-light"
-                pubkey="0a08329423b2ac3d4436"
+                pubkey={`process.env.UPLOADCARE_PUBLIC_KEY`}
                 multiple={false}
                 confirmUpload={true}
                 imgOnly={false}

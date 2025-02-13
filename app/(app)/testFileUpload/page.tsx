@@ -24,46 +24,23 @@ const VideoUploadForm: React.FC = () => {
     setFileUrl(url);
   };
 
-  const getTransFormedVideoLink = async () => {
-    const res = await axios.post("/api/fal/result", { requestId });
-    console.log("Response from getTransFormedVideoLink", res);
+  // const getTransFormedVideoLink = async () => {
+  //   const res = await axios.post("/api/fal/result", { requestId });
+  //   console.log("Response from getTransFormedVideoLink", res);
 
-    // Accessing the Fal.AI result
-    console.log("response.data.response.data.video.url", res.data.response.data.video.url);
+  //   // Accessing the Fal.AI result
+  //   console.log("response.data.response.data.video.url", res.data.response.data.video.url);
 
-    const cloudinaryTransformedVideo = await axios.post("/api/upload-generated-video", {
-      generatedUrl: res.data.response.data.video.url,
-      promptId: promptData?._id,
-    });
+  //   const cloudinaryTransformedVideo = await axios.post("/api/upload-generated-video", {
+  //     generatedUrl: res.data.response.data.video.url,
+  //     promptId: promptData?._id,
+  //   });
 
-    console.log("cloudinaryTransformedUrl", cloudinaryTransformedVideo);
-    setGeneratedVideoUrl(cloudinaryTransformedVideo.data.prompt.generatedUrl);
-  };
+  //   console.log("cloudinaryTransformedUrl", cloudinaryTransformedVideo);
+  //   setGeneratedVideoUrl(cloudinaryTransformedVideo.data.prompt.generatedUrl);
+  // };
 
-  useEffect(() => {
-    if (!requestId) return; // ✅ Prevent polling if no requestId
 
-    const interval = setInterval(async () => {
-      try {
-        const response = await axios.post(`/api/fal/status`, { requestId });
-        console.log("response.data.response.status:", response.data?.response?.status);
-
-        if (response.data.response.status === "COMPLETED") {
-          getTransFormedVideoLink();
-          clearInterval(interval);
-        }
-      } catch (error: any) {
-        console.error(
-          "❌ Error checking status for requestId:",
-          requestId,
-          error.response?.data || error.message
-        );
-        clearInterval(interval); // ✅ Stop polling if there's an error
-      }
-    }, 10000);
-
-    return () => clearInterval(interval); // ✅ Clean up on unmount
-  }, [requestId]);
 
   const generateAiVideo = async () => {
     try {
@@ -73,6 +50,7 @@ const VideoUploadForm: React.FC = () => {
         promptData?.referenceVideoUrl,
         promptData?.prompt
       );
+
       const response = await axios.post("/api/fal/submit", {
         promptId: promptData?._id,
         referenceVideoUrl: promptData?.referenceVideoUrl,
@@ -130,10 +108,10 @@ const VideoUploadForm: React.FC = () => {
         _id: response.data.prompt._id,
       });
 
-      if (uploaderRef.current) {
-        console.log("uploaderRef.current", uploaderRef.current);
-        // uploaderRef.current.clear(); // Uncomment if you want to auto-clear
-      }
+      // if (uploaderRef.current) {
+      //   console.log("uploaderRef.current", uploaderRef.current);
+      //   // uploaderRef.current.clear(); // Uncomment if you want to auto-clear
+      // }
 
       console.log("upload successful");
       setPrompt("");

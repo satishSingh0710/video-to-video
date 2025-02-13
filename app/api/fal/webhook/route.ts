@@ -5,8 +5,7 @@ import dbConnect from "@/lib/dbConnect";
 dbConnect(); 
 
 export async function POST(request: NextRequest) {
-    console.log("🔹 Webhook received: Incoming request"); 
-
+    console.log("Webhook received: Incoming request"); 
     try {
         const body = await request.json();
         console.log("🔹 Webhook received data:", body); 

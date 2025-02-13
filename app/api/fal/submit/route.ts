@@ -38,7 +38,7 @@ export async function POST(request: NextRequest) {
       "fal-ai/hunyuan-video/video-to-video",
       {
         input: { prompt: userPrompt, video_url: referenceVideoUrl },
-        webhookUrl: `https://efe0-106-219-153-41.ngrok-free.app/api/fal/webhook`,
+        webhookUrl: `${process.env.NEXT_PUBLIC_BASE_URL}/api/fal/webhook`,
       }
     );
 

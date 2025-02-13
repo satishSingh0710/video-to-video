@@ -1,37 +1,62 @@
 import { NextRequest, NextResponse } from "next/server";
 import Prompt from "@/app/models/prompts.models";
 import dbConnect from "@/lib/dbConnect";
+import { uploadVideoToCloudinary } from '@/utils/cloudinaryUpload';
 
-dbConnect(); 
 
 export async function POST(request: NextRequest) {
     console.log("🔹 Webhook received: Incoming request"); 
 
     try {
+        
+        await dbConnect(); 
         const body = await request.json();
         console.log("🔹 Webhook received data:", body); 
 
-        const { requestId, status, data } = body;
-        if (!requestId || !status) {
-            console.error("Webhook missing requestId or status:", body);
+        const { request_id, status, payload} = body;
+
+        if (!request_id || !status) {
+            console.error("Webhook missing request_id or status:", body);
             return NextResponse.json({ error: "Invalid webhook data" }, { status: 400 });
         }
 
-        console.log(`🔹 Webhook received for requestId: ${requestId}, Status: ${status}`);
+        console.log("🔹 Webhook received data:", { request_id, status, payload });
 
-        if (status !== "COMPLETED") {
+        const promptData= await Prompt.findOne({requestId: request_id })
+
+        if(!promptData){
+            return NextResponse.json({ error: "Request ID not found" }, { status: 200 });
+        }
+
+        if(promptData.status !== "processing"){
+            return NextResponse.json({ error: "Request already Processed" }, { status: 200 });
+        }
+ 
+        console.log(`🔹 Webhook received for request_id: ${request_id}, Status: ${status}`);
+
+        if (status !== "OK"){
+            promptData.status = "failed";
+            await promptData.save();
+
             return NextResponse.json({ message: "Processing..." }, { status: 202 });
         }
 
-        const generatedVideoUrl = data?.output?.video_url;
-        if (!generatedVideoUrl) {
-            console.error("No generated video URL found in webhook:", body);
-            return NextResponse.json({ error: "No video URL found" }, { status: 400 });
+        const generatedVideo = payload?.video?.url; 
+
+        if(!generatedVideo){
+            promptData.status = "failed";
+            await promptData.save();
+
+            return NextResponse.json({ error: "No video URL found in payload" }, { status: 200 });
         }
 
-        console.log("Video transformation completed:", generatedVideoUrl);
+        const cloudinaryUploadUrl = await uploadVideoToCloudinary(generatedVideo);
+        
+        promptData.generatedUrl = cloudinaryUploadUrl;
+        promptData.status = "completed";
+        await promptData.save();
 
-        return NextResponse.json({ message: "Video saved", generatedVideoUrl }, { status: 200 });
+        return NextResponse.json({ message: "Video saved", generatedVideo }, { status: 200 });
 
     } catch (error) {
         console.error("Webhook error:", error);

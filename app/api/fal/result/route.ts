@@ -4,11 +4,12 @@ import dbConnect from "@/lib/dbConnect";
 import { fal } from "@fal-ai/client";
 import axios from "axios";
 
-dbConnect(); // Ensure DB connection
+ // Ensure DB connection
 
 // post request to fetch the transformed video from the fal.ai queue
 export async function POST(request: NextRequest) {
     try {
+        await dbConnect();
         const body = await request.json();
         const { requestId } = body;
 
@@ -20,6 +21,7 @@ export async function POST(request: NextRequest) {
             requestId
           });
      
+
         const prompt = await Prompt.findOne({ requestId });
         if (!prompt) {
             return NextResponse.json({ error: "Prompt not found" }, { status: 404 });

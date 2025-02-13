@@ -1,22 +1,11 @@
 import { NextResponse, NextRequest } from 'next/server';
-import { v2 as cloudinary } from 'cloudinary';
 import dbConnect from '@/lib/dbConnect';
 import Prompt from '@/app/models/prompts.models';
 import { auth } from '@clerk/nextjs/server';
+import { uploadVideoToCloudinary } from '@/utils/cloudinaryUpload';
 
-dbConnect(); // Connect to the database
+ // Connect to the database
 
-cloudinary.config({
-    cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-    api_key: process.env.CLOUDINARY_API_KEY,
-    api_secret: process.env.CLOUDINARY_API_SECRET,
-});
-
-function checkCloudinaryCredentials() {
-    if (!process.env.CLOUDINARY_CLOUD_NAME || !process.env.CLOUDINARY_API_KEY || !process.env.CLOUDINARY_API_SECRET) {
-        throw new Error("Cloudinary credentials not found");
-    }
-}
 
 
 export async function POST(request: NextRequest) {
@@ -31,24 +20,18 @@ export async function POST(request: NextRequest) {
     }
 
     try {
-        /* checking cloudinary credentials 
-        -> getting the form data -
-        > uploading the reference video to cloudinary 
-         -> creating a new prompt*/
-
-        checkCloudinaryCredentials();
+        await dbConnect(); // Connect to the database
         const formData = await request?.formData();
         const referenceVideoUrl = formData.get('referenceVideoUrl') as string
         const prompt = formData.get('prompt');
-        const referenceVideoCloudinary = await cloudinary.uploader.upload(referenceVideoUrl, { resource_type: 'video' });
+        const cloudinaryUploadUrl = await uploadVideoToCloudinary(referenceVideoUrl);
 
         // creating a collection in the database.
         const newPrompt = await Prompt.create({
             userId,
             prompt,
-            referenceVideoUrl: referenceVideoCloudinary.secure_url,
+            referenceVideoUrl: cloudinaryUploadUrl,
         });
-
 
         if (!newPrompt) {
             console.log("Checking if code was here"); 

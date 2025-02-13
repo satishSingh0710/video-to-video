@@ -24,6 +24,12 @@ const promptSchema = new mongoose.Schema({
     requestId: {
         type: String, 
         required: false
+    }, 
+    status: {
+        type: String,
+        enum: ["processing", "completed", "failed"],
+        required: true,
+        default: "processing", 
     }
 }, {timestamps: true});
 

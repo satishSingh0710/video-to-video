@@ -4,8 +4,7 @@ import { auth } from "@clerk/nextjs/server";
 import Prompt from "@/app/models/prompts.models";
 import dbConnect from "@/lib/dbConnect";
 
-
-dbConnect(); // Ensure DB connection
+ // Ensure DB connection
 
 export async function POST(request: NextRequest) {
   try {
@@ -14,6 +13,8 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
+    
+    await dbConnect();
     const body = await request.json();
     const { userPrompt, referenceVideoUrl, promptId } = body;
     console.log("🔹Generation Request received:", {
@@ -34,13 +35,14 @@ export async function POST(request: NextRequest) {
     }
 
     console.log("🔹 Submitting request to Fal.AI...");
-    const { request_id } = await fal.queue.submit(
-      "fal-ai/hunyuan-video/video-to-video",
-      {
-        input: { prompt: userPrompt, video_url: referenceVideoUrl },
-        webhookUrl: `https://efe0-106-219-153-41.ngrok-free.app/api/fal/webhook`,
-      }
-    );
+    // const { request_id } = await fal.queue.submit(
+    //   "fal-ai/hunyuan-video/video-to-video",
+    //   {
+    //     input: { prompt: userPrompt, video_url: referenceVideoUrl },
+    //     webhookUrl: `${process.env.NEXT_PUBLIC_BASE_URL}/api/fal/webhook`,
+    //   }
+    // );
+    const request_id = "12345";
 
     console.log("Request submitted successfully:", request_id);
 
@@ -53,7 +55,7 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error("Error submitting request:", error);
     return NextResponse.json(
-      { error: "Internal Server Error" },
+      { error: "Failed to Generate Video" },
       { status: 500 }
     );
   }

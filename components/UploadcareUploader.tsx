@@ -8,12 +8,12 @@ interface UploadedFile {
     uuid: string;
     cdnUrl: string;
     fileInfo: {
-      originalFilename: string;
-      size: number;
-      mimeType: string;
+        originalFilename: string;
+        size: number;
+        mimeType: string;
     };
     status: string;
-  }
+}
 
 function UploadCareModal({ onUpload }: any) {
     const [isClient, setIsClient] = useState(false)
@@ -37,14 +37,14 @@ function UploadCareModal({ onUpload }: any) {
             };
             ctxProvider.addEventListener('change', handleChangeEvent);
         }, 5000)
-        
+
         return () => {
             // clearTimeout(timeoutId);
-            if(ctxProvider){
-                ctxProvider.removeEventListener('change', () => {});
+            if (ctxProvider) {
+                ctxProvider.removeEventListener('change', () => { });
             }
         }
-        
+
     }, [setFiles]);
 
     useEffect(() => {
@@ -54,16 +54,16 @@ function UploadCareModal({ onUpload }: any) {
     }, [files, onUpload]);
 
     return (
-        <div>
-            <FileUploaderRegular
+        <div className='mx-auto'>
+            <FileUploaderRegular 
                 apiRef={ctxProviderRef}
                 sourceList="local, camera,  gdrive"
                 cameraModes="video"
-                classNameUploader="uc-light"
-                pubkey="0a08329423b2ac3d4436"
-                multiple={false}
-                confirmUpload={true}
+                classNameUploader="uc-light mx-auto"
+                pubkey={process.env.NEXT_PUBLIC_UPLOADCARE_PUBLIC_KEY as any}
+                multiple={false} 
                 imgOnly={false}
+                accept='video/*'
             />
         </div>
     );

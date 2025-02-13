@@ -42,7 +42,7 @@ export async function POST(request: NextRequest) {
     //     webhookUrl: `${process.env.NEXT_PUBLIC_BASE_URL}/api/fal/webhook`,
     //   }
     // );
-    const request_id = "12345";
+    const request_id = "123456";
 
     console.log("Request submitted successfully:", request_id);
 

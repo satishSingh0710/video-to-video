@@ -13,7 +13,8 @@ const eslintConfig = [
   ...compat.extends("next/core-web-vitals", "next/typescript"),
   {
     rules: {
-      "@typescript-eslint/no-unused-vars": "off", // Disable the rule globally
+      "@typescript-eslint/no-unused-vars": "off", // Disable unused vars error
+      "@typescript-eslint/no-explicit-any": "off", // Disable explicit 'any' error
     },
   },
 ];

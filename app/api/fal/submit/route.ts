@@ -38,7 +38,16 @@ export async function POST(request: NextRequest) {
     const { request_id } = await fal.queue.submit(
       "fal-ai/hunyuan-video/video-to-video",
       {
-        input: { prompt: userPrompt, video_url: referenceVideoUrl },
+        input: { 
+          prompt: userPrompt, 
+          video_url: referenceVideoUrl,
+          num_inference_steps: 30,
+          aspect_ratio: "16:9",
+          resolution: "720p",
+          num_frames: 129,
+          enable_safety_checker: true,
+          strength: 0.85
+       },
         webhookUrl: `${process.env.NEXT_PUBLIC_BASE_URL}/api/fal/webhook`,
       }
     );

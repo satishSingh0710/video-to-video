@@ -35,14 +35,13 @@ export async function POST(request: NextRequest) {
     }
 
     console.log("🔹 Submitting request to Fal.AI...");
-    // const { request_id } = await fal.queue.submit(
-    //   "fal-ai/hunyuan-video/video-to-video",
-    //   {
-    //     input: { prompt: userPrompt, video_url: referenceVideoUrl },
-    //     webhookUrl: `${process.env.NEXT_PUBLIC_BASE_URL}/api/fal/webhook`,
-    //   }
-    // );
-    const request_id = "123456";
+    const { request_id } = await fal.queue.submit(
+      "fal-ai/hunyuan-video/video-to-video",
+      {
+        input: { prompt: userPrompt, video_url: referenceVideoUrl },
+        webhookUrl: `${process.env.NEXT_PUBLIC_BASE_URL}/api/fal/webhook`,
+      }
+    );
 
     console.log("Request submitted successfully:", request_id);
 

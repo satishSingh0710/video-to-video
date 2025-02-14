@@ -13,6 +13,10 @@ export default clerkMiddleware(async (auth, req) => {
     return NextResponse.redirect(new URL("/", req.url));
   }
 
+  if(!userId && (currentUrl.pathname === "/") ){
+    return NextResponse.redirect(new URL("/sign-in", req.url));
+  }
+
   return NextResponse.next();
 });
 

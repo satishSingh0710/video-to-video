@@ -12,7 +12,8 @@ export async function GET(request: NextRequest) {
 
     await dbConnect();
 
-    const prompts = await Prompt.find({ userId });
+    const prompts = await Prompt.find({ userId }).sort({ updatedAt: -1 });
+
 
     return NextResponse.json({ prompts }, { status: 200 });
 }

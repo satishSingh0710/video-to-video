@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Download, Loader, XCircle, Info } from "lucide-react";
+import React from "react";
 
 interface VideoGeneration {
     referenceVideoUrl: string;
@@ -63,7 +64,7 @@ const VideoGenerations = ({generations} : any) => {
                 </CardHeader>
                 <CardContent className="space-y-8">
                     {(generations as any[]).map((gen, index) => (
-<>
+      <React.Fragment key={gen.referenceVideoUrl || index}>
                         <div className="grid grid-cols-2 gap-4 " key={index}>
                             <div>
                                 <p className="text-sm font-medium">Reference Video</p>
@@ -118,8 +119,7 @@ const VideoGenerations = ({generations} : any) => {
                             </div>
                         )}
                     </div>
-                    </>
-
+                    </ React.Fragment>
                     ))}
                 </CardContent>
             </Card>

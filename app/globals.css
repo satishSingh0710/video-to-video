@@ -19,3 +19,16 @@ body {
     --radius: 0.5rem;
   }
 }
+
+.upload-care-btn{
+  width: 100%;
+  margin: auto; 
+  display: flex;
+  justify-content: center;
+
+}
+
+/* .uc-visual-drop-area{
+  padding: 4rem!important;
+  width: 100%!important;
+} */

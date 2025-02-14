@@ -59,7 +59,7 @@ function UploadCareModal({ onUpload }: any) {
                 apiRef={ctxProviderRef}
                 sourceList="local, camera,  gdrive"
                 cameraModes="video"
-                classNameUploader="uc-light mx-auto"
+                classNameUploader="uc-light mx-auto upload-care-btn"
                 pubkey={process.env.NEXT_PUBLIC_UPLOADCARE_PUBLIC_KEY as any}
                 multiple={false} 
                 imgOnly={false}
